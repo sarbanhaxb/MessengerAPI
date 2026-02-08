@@ -83,5 +83,21 @@ namespace MessengerAPI.Services
 
             await _messages.UpdateManyAsync(filter, update);
         }
+
+
+        // Получить сообщение по Id
+        public async Task<Message?> GetByIdAsync(string messageId)
+        {
+            var message = await _messages.Find(m => m.Id == messageId).FirstOrDefaultAsync();
+
+            if (message != null)
+            {
+                // Загрузка данных отправителя и получателя
+                message.Sender = await _userService.GetByIdAsync(message.SenderId);
+                message.Recipient = await _userService.GetByIdAsync(message.RecipientId);
+            }
+
+            return message;
+        }
     }
 }

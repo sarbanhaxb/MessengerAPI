@@ -15,5 +15,8 @@ namespace MessengerAPI.Services
 
         // Отметить все сообщения как прочитанные
         Task MarkAsReadAsync(string senderId, string recipientId);
+
+        // Получить сообщение по Id
+        Task<Message?> GetByIdAsync(string messageId);
     }
 }

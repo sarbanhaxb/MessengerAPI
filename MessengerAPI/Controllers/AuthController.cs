@@ -65,11 +65,6 @@ namespace MessengerAPI.Controllers
                 // Сохранение в БД
                 await _userService.CreateAsync(user);
 
-                // ВРЕМЕННЫЙ КОД ДЛЯ ОТЛАДКИ
-                Console.WriteLine($"Secret: {_configuration["JwtSettings:Secret"]}");
-                Console.WriteLine($"Issuer: {_configuration["JwtSettings:Issuer"]}");
-                Console.WriteLine($"Audience: {_configuration["JwtSettings:Audience"]}");
-
                 // Генерация JWT токена
                 var token = GenerateJwtToket(user);
 
@@ -212,14 +207,14 @@ namespace MessengerAPI.Controllers
         private string GenerateJwtToket(User user)
         {
             // Claims - данные, хранящиеся в токене
-            var claims = new[]
+            Claim[] claims = 
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id!),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.Name),
             };
 
-            // Берем секретный ключ из appsettings.json
+            // Достает секретный ключ из appsettings.json
             var secret = _configuration["JwtSettings:Secret"];
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!));
 

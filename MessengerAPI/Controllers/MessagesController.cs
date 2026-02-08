@@ -17,13 +17,15 @@ namespace MessengerAPI.Controllers
         private readonly IMessageService _messageService;
         private readonly IUserService _userService;
         private readonly IHubContext<ChatHub> _hubContext; // Для отправки real-time сообщений
+        private readonly IChatService _chatService;
 
         // Конструктор принимает сервисы и SignalR Hub Context
-        public MessagesController(IMessageService messageService, IUserService userService, IHubContext<ChatHub> hubContext)
+        public MessagesController(IMessageService messageService, IUserService userService, IHubContext<ChatHub> hubContext, IChatService chatService)
         {
             _messageService = messageService;
             _userService = userService;
             _hubContext = hubContext; // Для отправки WebSocket сообщений
+            _chatService = chatService;
         }
 
         #region Получить все сообщения чата
@@ -144,6 +146,8 @@ namespace MessengerAPI.Controllers
                 };
 
                 var createdMessage = await _messageService.CreateAsync(message);
+
+                await _chatService.CreateOrUpdateChatAsync(senderId, request.RecipientId, createdMessage.Id!);
 
                 // Формирование объекта для отправки клиенту
                 var messageResponse = new

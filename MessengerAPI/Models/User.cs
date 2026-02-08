@@ -6,7 +6,9 @@ namespace MessengerAPI.Models
     public class User
     {
         [BsonId] // Обознчение, что это Id документа для MongoDB
-        [BsonRepresentation(BsonType.ObjectId)] // Конвертирует ObjectId в строку для удобства работы
+        [BsonRepresentation(BsonType.ObjectId)] // Конвертирует ObjectId в строку для удобства работы.
+                                                // В MongoDB ObjectId выглядит примерно так: "507f1f77bcf86cd799439011".
+                                                // BsonRepresentation конвертирует Id из MongoDB в Id С#. В данном случае в string.
         public string? Id { get; set; }
 
         // Далее BsonElement указывает название поля в MongoDB

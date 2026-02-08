@@ -20,6 +20,7 @@ builder.Services.Configure<DatabaseSettings>(
 // Singleton - один экземпляр на всё приложение для работы с БД
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<IMessageService, MessageService>();
+builder.Services.AddSingleton<IChatService, ChatService>();
 
 // 4. Настройка JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
