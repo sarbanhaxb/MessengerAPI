@@ -75,7 +75,7 @@ namespace MessengerAPI.Controllers
                         recipientId = m.RecipientId,
                         text = m.Text,
                         isRead = m.IsRead,
-                        createAt = m.IsRead,
+                        createdAt = m.CreatedAt,
                         sender = new
                         {
                             id = m.Sender?.Id,

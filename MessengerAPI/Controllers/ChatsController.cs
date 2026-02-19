@@ -8,13 +8,13 @@ namespace MessengerAPI.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ChatController : ControllerBase
+    public class ChatsController : ControllerBase
     {
         private readonly IChatService _chatService;
         private readonly IUserService _userService;
         private readonly IMessageService _messageService;
 
-        public ChatController(IChatService chatService, IUserService userService, IMessageService messageService)
+        public ChatsController(IChatService chatService, IUserService userService, IMessageService messageService)
         {
             _chatService = chatService;
             _userService = userService;
