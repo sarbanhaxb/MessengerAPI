@@ -25,5 +25,9 @@ namespace MessengerAPI.Services
 
         // Обновить статус (online / offline)
         Task UpdateStatusAsync(string id, string status);
+
+        Task<bool> RequestPasswordResetAsync(string email);
+
+        Task<bool> ResetPasswordAsync(string email, string token, string newPassword);
     }
 }

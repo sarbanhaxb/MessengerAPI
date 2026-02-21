@@ -1,6 +1,8 @@
 ﻿using MessengerAPI.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using System.Diagnostics;
+using System.Security.Cryptography;
 
 namespace MessengerAPI.Services
 {
@@ -62,5 +64,73 @@ namespace MessengerAPI.Services
 
             await _users.UpdateOneAsync(u => u.Id == id, update);
         }
+
+        // Восстановление пароля
+        public async Task<bool> RequestPasswordResetAsync(string email)
+        {
+            var user = await GetByEmailAsync(email);
+            if (user == null) return false;
+
+            // Генерация токена (32 символа)
+            var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
+            // Токен истекает через 15 минут
+            var expires = DateTime.UtcNow.AddMinutes(15);
+
+            // Сохранение токена
+            var update = Builders<User>.Update
+                .Set(u => u.PasswordResetToken, token)
+                .Set(u => u.PasswordResetExpires, expires);
+
+            await _users.UpdateOneAsync(u => u.Id == user.Id, update);
+
+            return true;
+        }
+
+        public async Task<bool> ResetPasswordAsync(string email, string token, string newPassword)
+        {
+            var user = await GetByEmailAsync(email);
+            if (user == null)
+            {
+                return false;
+            }
+
+            if (user.PasswordResetToken != token)
+            {
+                return false;
+            }
+
+            if (user.PasswordResetExpires < DateTime.UtcNow)
+            {
+                return false;
+            }
+
+            // Проверка токена и срока действия
+            if (user.PasswordResetToken?.Trim() != token?.Trim() ||
+                user.PasswordResetExpires < DateTime.UtcNow)
+            {
+                return false;
+            }
+
+            if (user.PasswordResetExpires < DateTime.UtcNow)
+            {
+                return false;
+            }
+
+            // Хеширование нового пароля
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
+
+            // Обновление пароля + очистка токена
+            var update = Builders<User>.Update
+                .Set(u => u.Password, hashedPassword)
+                .Set(u => u.PasswordResetToken, (string?)null)
+                .Set(u => u.PasswordResetExpires, (DateTime?)null);
+
+            await _users.UpdateOneAsync(u => u.Id == user.Id, update);
+
+            return true;
+        }
+
+
     }
 }

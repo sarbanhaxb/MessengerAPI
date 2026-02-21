@@ -20,11 +20,13 @@ namespace MessengerAPI.Controllers
     {
         private readonly IUserService _userService;
         private readonly IConfiguration _configuration;
+        private readonly IEmailService _emailService;
 
-        public AuthController(IUserService userService, IConfiguration configuration)
+        public AuthController(IUserService userService, IConfiguration configuration, IEmailService emailService)
         {
             _userService = userService;
             _configuration = configuration; // Для доступа к appsettings.json
+            _emailService = emailService;
         }
 
         #region Регистрация
@@ -202,12 +204,83 @@ namespace MessengerAPI.Controllers
         }
         #endregion
 
+        #region Забыт пароль
+        // POST /api/forgot-password
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] PasswordResetRequest request)
+        {
+            try
+            {
+                var user = await _userService.GetByEmailAsync(request.Email);
+                if (user == null)
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Ссылка направлена на указанный email"
+                    });
+                }
+                var success = await _userService.RequestPasswordResetAsync(request.Email);
+
+                if (!success)
+                {
+                    return Ok(new { success = false, message = "Ошибка генерации токена" });
+                }
+
+                var updatedUser = await _userService.GetByEmailAsync(request.Email);
+                var resetToken = updatedUser.PasswordResetToken;
+
+                await _emailService.SendPasswordResetEmailAsync(request.Email, resetToken);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Ссылка для сброса пароля отправлена на email"
+                });
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Ошибка сервера", error = ex.Message });
+            }
+        }
+
+        // POST /api/reset-password
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            try
+            {
+                var user = await _userService.GetByEmailAsync(request.Email);
+
+                if(user == null)
+                {
+                    return BadRequest(new { success = false, message = "Пользователь не найден" });
+                }
+
+                var success = await _userService.ResetPasswordAsync(request.Email, request.Token, request.Password);
+
+                if (!success) return BadRequest(new { success = false, message = "Неверный или истекший токен" });
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Пароль успешно изменен"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        #endregion
 
         // Генерация JWT токена
         private string GenerateJwtToket(User user)
         {
             // Claims - данные, хранящиеся в токене
-            Claim[] claims = 
+            Claim[] claims =
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id!),
                 new Claim(ClaimTypes.Email, user.Email),

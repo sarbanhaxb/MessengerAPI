@@ -26,6 +26,9 @@ builder.Services.AddSingleton<IChatService, ChatService>();
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secret = jwtSettings["Secret"];
 
+// 5. Регистрация восстановления пароля
+builder.Services.AddSingleton<IEmailService, EmailService>();
+
 builder.Services.AddAuthentication(options =>
 {
     // По умолчанию используем JWT Bearer

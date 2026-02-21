@@ -35,5 +35,11 @@ namespace MessengerAPI.Models
 
         [BsonElement("updatedAt")]
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        [BsonElement("passwordResetToken")]
+        public string? PasswordResetToken { get; set; }
+
+        [BsonElement("passwordResetExpires")]
+        public DateTime? PasswordResetExpires { get; set; }
     }
 }
