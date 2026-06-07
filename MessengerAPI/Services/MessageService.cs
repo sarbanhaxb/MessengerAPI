@@ -37,7 +37,6 @@ namespace MessengerAPI.Services
         public async Task<List<Message>> GetChatMessagesAsync(string userId, string recipientId)
         {
 
-            // Создаём сложный фильтр:
             // Нужны сообщения, где:
             // (отправитель = userId И получатель = recipientId)
             // ИЛИ
@@ -98,6 +97,43 @@ namespace MessengerAPI.Services
             }
 
             return message;
+        }
+
+        // Редактирование сообщения
+        public async Task<Message> UpdateAsync(Message message)
+        {
+            var update = Builders<Message>.Update
+                .Set(m => m.Text, message.Text)
+                .Set(m => m.IsEdited, message.IsEdited)
+                .Set(m => m.EditedAt, message.EditedAt)
+                .Set(m => m.UpdatedAt, DateTime.UtcNow);
+
+            await _messages.ReplaceOneAsync(m => m.Id == message.Id, message);
+
+            message.Sender = await _userService.GetByIdAsync(message.SenderId);
+            message.Recipient = await _userService.GetByIdAsync (message.RecipientId);
+
+            return message;
+        }
+
+        // Удаление сообщения
+        public async Task<ServiceResult> DeleteMessageAsync(string messageId, string senderId)
+        {
+            var message = await _messages.Find(m => m.Id == messageId).FirstOrDefaultAsync();
+
+            if (message == null)
+                return ServiceResult.ErrorResult("Сообщение не найден");
+
+            if (message.SenderId != senderId)
+                return ServiceResult.ErrorResult("Нет прав на удаление");
+
+            var today = DateTime.UtcNow.Date;
+            if (message.CreatedAt.Date < today)
+                return ServiceResult.ErrorResult("Можно удалять только сегодняшние сообщения");
+
+            await _messages.DeleteOneAsync(m => m.Id == messageId);
+
+            return ServiceResult.SuccessResult("Удалено", new { recipientId = message.RecipientId });
         }
     }
 }

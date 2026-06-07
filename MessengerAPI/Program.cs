@@ -73,13 +73,21 @@ builder.Services.AddSignalR();
 // 6. Настраиваем CORS (чтобы фронтенд мог обращаться к API)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactApp", policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")  // URL фронтенда
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+        policy.SetIsOriginAllowed(_ => true)
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
+
     });
+    //options.AddPolicy("AllowReactApp", policy =>
+    //{
+    //    policy.WithOrigins("http://localhost:5173")  // URL фронтенда
+    //          .AllowAnyHeader()
+    //          .AllowAnyMethod()
+    //          .AllowCredentials();
+    //});
 });
 
 // 7. Добавляем Swagger (документация API)
@@ -127,10 +135,12 @@ if (app.Environment.IsDevelopment())
 }
 
 // 2. HTTPS редирект
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 // 3. CORS 
-app.UseCors("AllowReactApp");
+app.UseWebSockets();  // ← ЭТА СТРОЧКА КЛЮЧЕВАЯ!
+//app.UseCors("AllowReactApp");
+app.UseCors("AllowAll");
 
 // 4. Authentication
 app.UseAuthentication();

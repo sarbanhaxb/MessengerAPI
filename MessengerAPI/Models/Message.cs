@@ -34,5 +34,14 @@ namespace MessengerAPI.Models
         public User? Sender { get; set; } // Полные данные отправителя
         [BsonIgnore]
         public User? Recipient { get; set; } // Полные данные получателя
+
+        [BsonElement("isEdited")]
+        public bool IsEdited { get; set; } = false;
+
+        [BsonElement("editedAt")]
+        public DateTime? EditedAt { get; set; }
+
+        [BsonElement("updatedAt")]
+        public DateTime UpdatedAt {  get; set; } = DateTime.UtcNow;
     }
 }

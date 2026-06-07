@@ -18,5 +18,11 @@ namespace MessengerAPI.Services
 
         // Получить сообщение по Id
         Task<Message?> GetByIdAsync(string messageId);
+
+        // Редактирование сообщений
+        Task<Message> UpdateAsync(Message message);
+
+        // Удаление сообщений
+        Task<ServiceResult> DeleteMessageAsync(string messageId, string senderId);
     }
 }
